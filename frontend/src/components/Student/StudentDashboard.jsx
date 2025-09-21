@@ -1,4 +1,3 @@
-// This file has been migrated to StudentDashboard.jsx. Please use StudentDashboard.jsx for the StudentDashboard component.
 import React, { useState, useEffect } from 'react';
 import { getInternships } from '../../api/api';
 
