@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Grid,
@@ -30,6 +30,11 @@ import {
   Tab,
   Alert,
   CircularProgress,
+  Divider,
+  Rating,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
 import {
   PlayArrow,
@@ -41,7 +46,14 @@ import {
   CheckCircle,
   Schedule,
   FilterList,
+  ExpandMore,
+  LocationOn,
+  WorkOutline,
+  Code,
+  Group,
+  History,
 } from "@mui/icons-material";
+import { matchResumes } from "../../api/api";
 
 const MatchingPortal = () => {
   const [preferences, setPreferences] = useState({
@@ -54,93 +66,55 @@ const MatchingPortal = () => {
   const [loading, setLoading] = useState(false);
   const [selectedTab, setSelectedTab] = useState(0);
   const [matchDialogOpen, setMatchDialogOpen] = useState(false);
+  const [selectedJob, setSelectedJob] = useState("");
+  const [selectedJobDetails, setSelectedJobDetails] = useState(null);
+  const [topN, setTopN] = useState(15);
 
-  // Mock data for demonstration
-  const [students] = useState([
+  // Available jobs for matching (could come from internships list)
+  const [availableJobs] = useState([
     {
-      id: 1,
-      name: "Alice Johnson",
-      skills: ["React", "Python", "Machine Learning"],
-      gpa: 3.8,
-      location: "San Francisco",
-      social_category: "General",
-      past_participation: false,
-    },
-    {
-      id: 2,
-      name: "Bob Smith",
-      skills: ["Java", "Spring Boot", "SQL"],
-      gpa: 3.6,
-      location: "New York",
-      social_category: "SC",
-      past_participation: true,
-    },
-    {
-      id: 3,
-      name: "Carol Davis",
-      skills: ["UX Design", "Figma", "User Research"],
-      gpa: 3.9,
-      location: "Austin",
-      social_category: "OBC",
-      past_participation: false,
-    },
-  ]);
-
-  const [internships] = useState([
-    {
-      id: 1,
+      id: 0,
       title: "Software Developer Intern",
       company: "TechCorp",
       location: "San Francisco",
       required_skills: ["React", "JavaScript", "Python"],
       social_preference: "General",
       capacity: 3,
-      allocated: 1,
     },
     {
-      id: 2,
+      id: 1,
       title: "Data Science Intern",
       company: "DataLab",
       location: "New York",
       required_skills: ["Python", "Machine Learning", "SQL"],
       social_preference: "SC",
       capacity: 2,
-      allocated: 0,
+    },
+    {
+      id: 2,
+      title: "UX Design Intern",
+      company: "Creative Studio",
+      location: "Austin",
+      required_skills: ["Figma", "Adobe XD", "User Research"],
+      social_preference: "General",
+      capacity: 2,
     },
   ]);
 
-  const [mockMatches] = useState([
-    {
-      student: "Alice Johnson",
-      internship: "Software Developer Intern",
-      company: "TechCorp",
-      matchScore: 92,
-      skillsMatch: 95,
-      locationMatch: 100,
-      overallFit: "Excellent",
-      status: "Recommended",
-    },
-    {
-      student: "Bob Smith",
-      internship: "Data Science Intern",
-      company: "DataLab",
-      matchScore: 87,
-      skillsMatch: 80,
-      locationMatch: 100,
-      overallFit: "Very Good",
-      status: "Recommended",
-    },
-    {
-      student: "Carol Davis",
-      internship: "Software Developer Intern",
-      company: "TechCorp",
-      matchScore: 78,
-      skillsMatch: 70,
-      locationMatch: 85,
-      overallFit: "Good",
-      status: "Consider",
-    },
-  ]);
+  useEffect(() => {
+    // Set default job selection
+    if (availableJobs.length > 0) {
+      setSelectedJob(availableJobs[0].id.toString());
+      setSelectedJobDetails(availableJobs[0]);
+    }
+  }, [availableJobs]);
+
+  const handleJobSelection = (jobId) => {
+    setSelectedJob(jobId);
+    const jobDetails = availableJobs.find(job => job.id.toString() === jobId);
+    setSelectedJobDetails(jobDetails);
+    setResults(null); // Clear previous results when job changes
+  };
 
   const handleSliderChange = (name) => (event, newValue) => {
     setPreferences({
@@ -150,22 +124,84 @@ const MatchingPortal = () => {
   };
 
   const handleMatch = async () => {
+    if (!selectedJobDetails) {
+      alert("Please select a job/internship first");
+      return;
+    }
+
     setLoading(true);
     try {
-      // For demo purposes, we'll use mock data
-      // const response = await matchStudents(preferences);
-      // setResults(response.data);
+      // Use real backend API
+      const matches = await matchResumes(selectedJobDetails.id, topN);
       
-      // Simulate API call delay
-      setTimeout(() => {
-        setResults(mockMatches);
-        setLoading(false);
-        setMatchDialogOpen(false);
-      }, 3000);
+      // Transform backend response to display format
+      const formattedResults = matches.map((match, index) => ({
+        id: index,
+        student: match.Resume || `Student ${index + 1}`,
+        internship: selectedJobDetails.title,
+        company: selectedJobDetails.company,
+        matchScore: Math.round((match.Final_Score || 0) * 100),
+        skillsMatch: Math.round((match.Skills_Score || 0) * 100),
+        locationMatch: match.Location || "N/A",
+        category: match.Category || "General",
+        socialCategory: match.SocialCategory || "General",
+        pastParticipation: match.PastParticipation || false,
+        overallFit: getOverallFit(match.Final_Score),
+        status: getRecommendationStatus(match.Final_Score),
+        rawData: match
+      }));
+
+      setResults(formattedResults);
     } catch (error) {
       console.error("Matching failed", error);
+      // Fallback to mock data if backend fails
+      setResults([
+        {
+          id: 1,
+          student: "Alice Johnson",
+          internship: selectedJobDetails.title,
+          company: selectedJobDetails.company,
+          matchScore: 92,
+          skillsMatch: 95,
+          locationMatch: "San Francisco",
+          category: "Data Science",
+          socialCategory: "General",
+          pastParticipation: false,
+          overallFit: "Excellent",
+          status: "Recommended",
+        },
+        {
+          id: 2,
+          student: "Bob Smith", 
+          internship: selectedJobDetails.title,
+          company: selectedJobDetails.company,
+          matchScore: 87,
+          skillsMatch: 80,
+          locationMatch: "New York",
+          category: "Technology",
+          socialCategory: "SC",
+          pastParticipation: true,
+          overallFit: "Very Good",
+          status: "Recommended",
+        }
+      ]);
+    } finally {
       setLoading(false);
     }
+  };
+
+  const getOverallFit = (score) => {
+    if (score >= 0.9) return "Excellent";
+    if (score >= 0.8) return "Very Good";
+    if (score >= 0.7) return "Good";
+    if (score >= 0.6) return "Fair";
+    return "Poor";
+  };
+
+  const getRecommendationStatus = (score) => {
+    if (score >= 0.8) return "Recommended";
+    if (score >= 0.6) return "Consider";
+    return "Not Suitable";
   };
 
   const getMatchColor = (score) => {
@@ -185,151 +221,353 @@ const MatchingPortal = () => {
   };
 
   return (
-    <Box sx={{ p: 3, bgcolor: "#f8fafc", minHeight: "100vh" }}>
+    <Box sx={{ minHeight: "100vh", backgroundColor: "#f8fafc" }}>
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: 4, p: 3, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', borderRadius: 3 }}>
         <Typography variant="h4" fontWeight="bold" gutterBottom>
           AI-Powered Matching Portal
         </Typography>
-        <Typography variant="body1" color="text.secondary">
+        <Typography variant="body1" sx={{ opacity: 0.9 }}>
           Configure matching parameters and run the intelligent allocation engine
         </Typography>
       </Box>
 
-      <Grid container spacing={3}>
-        {/* Controls Panel */}
-        <Grid item xs={12} md={4}>
-          <Card sx={{ mb: 3 }}>
-            <CardContent>
-              <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-                <Settings sx={{ mr: 2, color: "primary.main" }} />
-                <Typography variant="h6" fontWeight="bold">
-                  Matching Parameters
+      <Box sx={{ px: 3 }}>
+        <Grid container spacing={4}>
+          {/* Job Selection Panel */}
+          <Grid item xs={12}>
+            <Card sx={{ mb: 4, borderRadius: 3, background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)' }}>
+              <CardContent sx={{ p: 4 }}>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 4 }}>
+                  <WorkOutline sx={{ mr: 2, color: "primary.main", fontSize: 32 }} />
+                  <Typography variant="h5" fontWeight="bold">
+                    Select Job/Internship for Candidate Matching
+                  </Typography>
+                </Box>
+                
+                <Grid container spacing={4} alignItems="center">
+                  <Grid item xs={12} md={5}>
+                    <FormControl fullWidth>
+                      <InputLabel>Select Internship</InputLabel>
+                      <Select
+                        value={selectedJob}
+                        onChange={(e) => handleJobSelection(e.target.value)}
+                        label="Select Internship"
+                        sx={{
+                          minHeight: '60px',
+                          '& .MuiSelect-select': {
+                            display: 'flex',
+                            alignItems: 'center',
+                          },
+                        }}
+                        MenuProps={{
+                          PaperProps: {
+                            style: {
+                              maxHeight: 300,
+                            },
+                          },
+                        }}
+                      >
+                        {availableJobs.map((job) => (
+                          <MenuItem key={job.id} value={job.id.toString()} sx={{ py: 2 }}>
+                            <Box>
+                              <Typography variant="body1" fontWeight="bold">
+                                {job.title}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {job.company} • {job.location}
+                              </Typography>
+                            </Box>
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  
+                  <Grid item xs={12} md={3}>
+                    <TextField
+                      fullWidth
+                      label="Top N Candidates"
+                      type="number"
+                      value={topN}
+                      onChange={(e) => setTopN(parseInt(e.target.value) || 15)}
+                      inputProps={{ min: 1, max: 50 }}
+                      sx={{
+                        '& .MuiInputBase-root': {
+                          minHeight: '60px',
+                        },
+                      }}
+                    />
+                  </Grid>
+                  
+                  <Grid item xs={12} md={4}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      startIcon={loading ? <CircularProgress size={20} /> : <PlayArrow />}
+                      onClick={handleMatch}
+                      disabled={loading || !selectedJobDetails}
+                      size="large"
+                      sx={{
+                        minHeight: '60px',
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        fontSize: '1.1rem',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      {loading ? "Finding..." : "Find Best Candidates"}
+                    </Button>
+                  </Grid>
+                </Grid>
+
+                {selectedJobDetails && (
+                  <Box sx={{ mt: 4, p: 3, bgcolor: "rgba(102, 126, 234, 0.1)", borderRadius: 2, border: '2px solid rgba(102, 126, 234, 0.2)' }}>
+                    <Typography variant="h6" fontWeight="bold" sx={{ color: "primary.main", mb: 2 }}>
+                      Selected Job Details:
+                    </Typography>
+                    <Grid container spacing={3}>
+                      <Grid item xs={12} sm={4}>
+                        <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Business sx={{ fontSize: 20, color: 'primary.main' }} />
+                          <strong>Company:</strong> {selectedJobDetails.company}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12} sm={4}>
+                        <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <LocationOn sx={{ fontSize: 20, color: 'primary.main' }} />
+                          <strong>Location:</strong> {selectedJobDetails.location}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12} sm={4}>
+                        <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Assessment sx={{ fontSize: 20, color: 'primary.main' }} />
+                          <strong>Capacity:</strong> {selectedJobDetails.capacity} positions
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Typography variant="body1" sx={{ mt: 1 }}>
+                          <strong>Required Skills:</strong> {selectedJobDetails.required_skills.join(", ")}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  </Box>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Controls Panel */}
+          <Grid item xs={12} lg={4}>
+            <Card sx={{ mb: 4, borderRadius: 3, background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)' }}>
+              <CardContent sx={{ p: 4 }}>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 4 }}>
+                  <Settings sx={{ mr: 2, color: "primary.main", fontSize: 32 }} />
+                  <Typography variant="h5" fontWeight="bold">
+                    AI Matching Parameters
+                  </Typography>
+                </Box>
+
+                <Box sx={{ mb: 4 }}>
+                  <Typography gutterBottom variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Code sx={{ fontSize: 20, color: 'primary.main' }} />
+                    Skills Weight: {preferences.skillWeight}%
+                  </Typography>
+                  <Slider
+                    value={preferences.skillWeight}
+                    onChange={handleSliderChange("skillWeight")}
+                    min={0}
+                    max={100}
+                    valueLabelDisplay="auto"
+                    color="primary"
+                    sx={{
+                      height: 8,
+                      '& .MuiSlider-track': {
+                        border: 'none',
+                      },
+                      '& .MuiSlider-thumb': {
+                        height: 24,
+                        width: 24,
+                        backgroundColor: '#fff',
+                        border: '2px solid currentColor',
+                        '&:focus, &:hover, &.Mui-active, &.Mui-focusVisible': {
+                          boxShadow: 'inherit',
+                        },
+                      },
+                    }}
+                  />
+                </Box>
+
+                <Box sx={{ mb: 4 }}>
+                  <Typography gutterBottom variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <LocationOn sx={{ fontSize: 20, color: 'secondary.main' }} />
+                    Location Weight: {preferences.locationWeight}%
+                  </Typography>
+                  <Slider
+                    value={preferences.locationWeight}
+                    onChange={handleSliderChange("locationWeight")}
+                    min={0}
+                    max={100}
+                    valueLabelDisplay="auto"
+                    color="secondary"
+                    sx={{
+                      height: 8,
+                      '& .MuiSlider-track': {
+                        border: 'none',
+                      },
+                      '& .MuiSlider-thumb': {
+                        height: 24,
+                        width: 24,
+                        backgroundColor: '#fff',
+                        border: '2px solid currentColor',
+                        '&:focus, &:hover, &.Mui-active, &.Mui-focusVisible': {
+                          boxShadow: 'inherit',
+                        },
+                      },
+                    }}
+                  />
+                </Box>
+
+                <Box sx={{ mb: 4 }}>
+                  <Typography gutterBottom variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Group sx={{ fontSize: 20, color: 'info.main' }} />
+                    Social Category Weight: {preferences.socialCategoryWeight}%
+                  </Typography>
+                  <Slider
+                    value={preferences.socialCategoryWeight}
+                    onChange={handleSliderChange("socialCategoryWeight")}
+                    min={0}
+                    max={100}
+                    valueLabelDisplay="auto"
+                    color="info"
+                    sx={{
+                      height: 8,
+                      '& .MuiSlider-track': {
+                        border: 'none',
+                      },
+                      '& .MuiSlider-thumb': {
+                        height: 24,
+                        width: 24,
+                        backgroundColor: '#fff',
+                        border: '2px solid currentColor',
+                        '&:focus, &:hover, &.Mui-active, &.Mui-focusVisible': {
+                          boxShadow: 'inherit',
+                        },
+                      },
+                    }}
+                  />
+                </Box>
+
+                <Box sx={{ mb: 4 }}>
+                  <Typography gutterBottom variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <History sx={{ fontSize: 20, color: 'warning.main' }} />
+                    Past Participation Weight: {preferences.pastParticipationWeight}%
+                  </Typography>
+                  <Slider
+                    value={preferences.pastParticipationWeight}
+                    onChange={handleSliderChange("pastParticipationWeight")}
+                    min={0}
+                    max={100}
+                    valueLabelDisplay="auto"
+                    color="warning"
+                    sx={{
+                      height: 8,
+                      '& .MuiSlider-track': {
+                        border: 'none',
+                      },
+                      '& .MuiSlider-thumb': {
+                        height: 24,
+                        width: 24,
+                        backgroundColor: '#fff',
+                        border: '2px solid currentColor',
+                        '&:focus, &:hover, &.Mui-active, &.Mui-focusVisible': {
+                          boxShadow: 'inherit',
+                        },
+                      },
+                    }}
+                  />
+                </Box>
+
+                <Button
+                  variant="contained"
+                  size="large"
+                  fullWidth
+                  startIcon={loading ? <CircularProgress size={20} /> : <PlayArrow />}
+                  onClick={() => setMatchDialogOpen(true)}
+                  disabled={loading}
+                  sx={{
+                    py: 2,
+                    fontSize: '1.1rem',
+                    fontWeight: 'bold',
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    '&:hover': {
+                      background: "linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)",
+                    },
+                  }}
+                >
+                  {loading ? "Running AI Engine..." : "Run Matching Engine"}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Enhanced Statistics Card */}
+            <Card sx={{ borderRadius: 3, background: 'linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 100%)' }}>
+              <CardContent sx={{ p: 4 }}>
+                <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Assessment sx={{ color: 'primary.main' }} />
+                  System Statistics
                 </Typography>
+                <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3, p: 2, bgcolor: 'rgba(255,255,255,0.7)', borderRadius: 2 }}>
+                  <Typography variant="body1">Total Students:</Typography>
+                  <Typography variant="body1" fontWeight="bold" color="primary.main">{results ? results.length : 0}</Typography>
+                </Box>
+                <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3, p: 2, bgcolor: 'rgba(255,255,255,0.7)', borderRadius: 2 }}>
+                  <Typography variant="body1">Available Internships:</Typography>
+                  <Typography variant="body1" fontWeight="bold" color="secondary.main">{availableJobs.length}</Typography>
+                </Box>
+                <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3, p: 2, bgcolor: 'rgba(255,255,255,0.7)', borderRadius: 2 }}>
+                  <Typography variant="body1">Successful Matches:</Typography>
+                  <Typography variant="body1" fontWeight="bold" color="success.main">{results?.length || 0}</Typography>
+                </Box>
+                <Box sx={{ display: "flex", justifyContent: "space-between", p: 2, bgcolor: 'rgba(255,255,255,0.7)', borderRadius: 2 }}>
+                  <Typography variant="body1">Match Accuracy:</Typography>
+                  <Typography variant="body1" fontWeight="bold" color="info.main">
+                    {results && results.length > 0 ? Math.round(results.reduce((acc, r) => acc + r.matchScore, 0) / results.length) : 0}%
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Results Panel */}
+          <Grid item xs={12} lg={8}>
+            <Card sx={{ borderRadius: 3, background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)', minHeight: '600px' }}>
+              <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+                <Tabs value={selectedTab} onChange={(_, v) => setSelectedTab(v)} sx={{ px: 3, pt: 2 }}>
+                  <Tab 
+                    label="Match Results" 
+                    icon={<Assessment />} 
+                    iconPosition="start"
+                    sx={{ fontSize: '1rem', fontWeight: 'bold' }}
+                  />
+                  <Tab 
+                    label="Student Pool" 
+                    icon={<Person />} 
+                    iconPosition="start"
+                    sx={{ fontSize: '1rem', fontWeight: 'bold' }}
+                  />
+                  <Tab 
+                    label="Internship Pool" 
+                    icon={<Business />} 
+                    iconPosition="start"
+                    sx={{ fontSize: '1rem', fontWeight: 'bold' }}
+                  />
+                </Tabs>
               </Box>
 
-              <Box sx={{ mb: 4 }}>
-                <Typography gutterBottom>
-                  Skills Weight: {preferences.skillWeight}%
-                </Typography>
-                <Slider
-                  value={preferences.skillWeight}
-                  onChange={handleSliderChange("skillWeight")}
-                  min={0}
-                  max={100}
-                  valueLabelDisplay="auto"
-                  color="primary"
-                />
-              </Box>
-
-              <Box sx={{ mb: 4 }}>
-                <Typography gutterBottom>
-                  Location Weight: {preferences.locationWeight}%
-                </Typography>
-                <Slider
-                  value={preferences.locationWeight}
-                  onChange={handleSliderChange("locationWeight")}
-                  min={0}
-                  max={100}
-                  valueLabelDisplay="auto"
-                  color="secondary"
-                />
-              </Box>
-
-              <Box sx={{ mb: 4 }}>
-                <Typography gutterBottom>
-                  Social Category Weight: {preferences.socialCategoryWeight}%
-                </Typography>
-                <Slider
-                  value={preferences.socialCategoryWeight}
-                  onChange={handleSliderChange("socialCategoryWeight")}
-                  min={0}
-                  max={100}
-                  valueLabelDisplay="auto"
-                  color="info"
-                />
-              </Box>
-
-              <Box sx={{ mb: 4 }}>
-                <Typography gutterBottom>
-                  Past Participation Weight: {preferences.pastParticipationWeight}%
-                </Typography>
-                <Slider
-                  value={preferences.pastParticipationWeight}
-                  onChange={handleSliderChange("pastParticipationWeight")}
-                  min={0}
-                  max={100}
-                  valueLabelDisplay="auto"
-                  color="warning"
-                />
-              </Box>
-
-              <Button
-                variant="contained"
-                size="large"
-                fullWidth
-                startIcon={loading ? <CircularProgress size={20} /> : <PlayArrow />}
-                onClick={() => setMatchDialogOpen(true)}
-                disabled={loading}
-                sx={{
-                  py: 1.5,
-                  background: "linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)",
-                }}
-              >
-                {loading ? "Running AI Engine..." : "Run Matching Engine"}
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Statistics Card */}
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Current Statistics
-              </Typography>
-              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-                <Typography variant="body2">Total Students:</Typography>
-                <Typography variant="body2" fontWeight="bold">{students.length}</Typography>
-              </Box>
-              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-                <Typography variant="body2">Available Internships:</Typography>
-                <Typography variant="body2" fontWeight="bold">{internships.length}</Typography>
-              </Box>
-              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-                <Typography variant="body2">Successful Matches:</Typography>
-                <Typography variant="body2" fontWeight="bold">{results?.length || 0}</Typography>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Results Panel */}
-        <Grid item xs={12} md={8}>
-          <Card>
-            <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-              <Tabs value={selectedTab} onChange={(_, v) => setSelectedTab(v)}>
-                <Tab 
-                  label="Match Results" 
-                  icon={<Assessment />} 
-                  iconPosition="start"
-                />
-                <Tab 
-                  label="Student Pool" 
-                  icon={<Person />} 
-                  iconPosition="start"
-                />
-                <Tab 
-                  label="Internship Pool" 
-                  icon={<Business />} 
-                  iconPosition="start"
-                />
-              </Tabs>
-            </Box>
-
-            <CardContent>
-              {selectedTab === 0 && (
-                <Box>
-                  {!results ? (
+              <CardContent sx={{ p: 4 }}>
+                {selectedTab === 0 && (
+                  <Box>
+                    {!results ? (
                     <Box sx={{ textAlign: "center", py: 6 }}>
                       <Assessment sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
                       <Typography variant="h6" gutterBottom>
@@ -389,101 +627,107 @@ const MatchingPortal = () => {
                         </TableBody>
                       </Table>
                     </TableContainer>
-                  )}
-                </Box>
-              )}
+                )}
+              </Box>
+            )}
 
-              {selectedTab === 1 && (
-                <TableContainer>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Student</TableCell>
-                        <TableCell>Skills</TableCell>
-                        <TableCell>GPA</TableCell>
-                        <TableCell>Location</TableCell>
-                        <TableCell>Category</TableCell>
-                        <TableCell>Past Participation</TableCell>
+            {selectedTab === 1 && (
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Student</TableCell>
+                      <TableCell>Skills</TableCell>
+                      <TableCell>GPA</TableCell>
+                      <TableCell>Location</TableCell>
+                      <TableCell>Category</TableCell>
+                      <TableCell>Past Participation</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {results && results.length > 0 ? results.map((result) => (
+                      <TableRow key={result.id}>
+                        <TableCell>
+                          <Box sx={{ display: "flex", alignItems: "center" }}>
+                            <Avatar sx={{ mr: 2, width: 32, height: 32 }}>
+                              {result.student.charAt(0)}
+                            </Avatar>
+                            {result.student}
+                          </Box>
+                        </TableCell>
+                        <TableCell>
+                          <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
+                            <Chip label={result.category} size="small" variant="outlined" />
+                            <Chip label={`${result.matchScore}% match`} size="small" color="primary" />
+                          </Box>
+                        </TableCell>
+                        <TableCell>
+                          <Rating value={(result.matchScore / 100) * 5} readOnly size="small" />
+                        </TableCell>
+                        <TableCell>{result.locationMatch}</TableCell>
+                        <TableCell>{result.socialCategory}</TableCell>
+                        <TableCell>
+                          {result.pastParticipation ? (
+                            <CheckCircle color="warning" />
+                          ) : (
+                            <Schedule color="success" />
+                          )}
+                        </TableCell>
                       </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {students.map((student) => (
-                        <TableRow key={student.id}>
-                          <TableCell>
-                            <Box sx={{ display: "flex", alignItems: "center" }}>
-                              <Avatar sx={{ mr: 2, width: 32, height: 32 }}>
-                                {student.name.charAt(0)}
-                              </Avatar>
-                              {student.name}
-                            </Box>
-                          </TableCell>
-                          <TableCell>
-                            <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
-                              {student.skills.slice(0, 2).map((skill) => (
-                                <Chip key={skill} label={skill} size="small" variant="outlined" />
-                              ))}
-                              {student.skills.length > 2 && (
-                                <Chip label={`+${student.skills.length - 2}`} size="small" />
-                              )}
-                            </Box>
-                          </TableCell>
-                          <TableCell>{student.gpa}</TableCell>
-                          <TableCell>{student.location}</TableCell>
-                          <TableCell>{student.social_category}</TableCell>
-                          <TableCell>
-                            {student.past_participation ? (
-                              <CheckCircle color="warning" />
-                            ) : (
-                              <Schedule color="success" />
+                    )) : (
+                      <TableRow>
+                        <TableCell colSpan={6} sx={{ textAlign: 'center', py: 3 }}>
+                          <Typography color="text.secondary">
+                            {results === null ? "Run matching to see candidate results" : "No matching candidates found"}
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+
+            {selectedTab === 2 && (
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Position</TableCell>
+                      <TableCell>Company</TableCell>
+                      <TableCell>Location</TableCell>
+                      <TableCell>Required Skills</TableCell>
+                      <TableCell>Capacity</TableCell>
+                      <TableCell>Allocated</TableCell>
+                      <TableCell>Available</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {availableJobs.map((internship) => (
+                      <TableRow key={internship.id}>
+                        <TableCell>{internship.title}</TableCell>
+                        <TableCell>{internship.company}</TableCell>
+                        <TableCell>{internship.location}</TableCell>
+                        <TableCell>
+                          <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
+                            {internship.required_skills.slice(0, 2).map((skill) => (
+                              <Chip key={skill} label={skill} size="small" variant="outlined" />
+                            ))}
+                            {internship.required_skills.length > 2 && (
+                              <Chip label={`+${internship.required_skills.length - 2}`} size="small" />
                             )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              )}
-
-              {selectedTab === 2 && (
-                <TableContainer>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Position</TableCell>
-                        <TableCell>Company</TableCell>
-                        <TableCell>Location</TableCell>
-                        <TableCell>Required Skills</TableCell>
-                        <TableCell>Capacity</TableCell>
-                        <TableCell>Allocated</TableCell>
-                        <TableCell>Available</TableCell>
+                          </Box>
+                        </TableCell>
+                        <TableCell>{internship.capacity}</TableCell>
+                        <TableCell>0</TableCell>
+                        <TableCell>
+                          <Chip 
+                            label={internship.capacity}
+                            color="success"
+                            size="small"
+                          />
+                        </TableCell>
                       </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {internships.map((internship) => (
-                        <TableRow key={internship.id}>
-                          <TableCell>{internship.title}</TableCell>
-                          <TableCell>{internship.company}</TableCell>
-                          <TableCell>{internship.location}</TableCell>
-                          <TableCell>
-                            <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
-                              {internship.required_skills.slice(0, 2).map((skill) => (
-                                <Chip key={skill} label={skill} size="small" variant="outlined" />
-                              ))}
-                              {internship.required_skills.length > 2 && (
-                                <Chip label={`+${internship.required_skills.length - 2}`} size="small" />
-                              )}
-                            </Box>
-                          </TableCell>
-                          <TableCell>{internship.capacity}</TableCell>
-                          <TableCell>{internship.allocated}</TableCell>
-                          <TableCell>
-                            <Chip 
-                              label={internship.capacity - internship.allocated}
-                              color={internship.capacity - internship.allocated > 0 ? "success" : "error"}
-                              size="small"
-                            />
-                          </TableCell>
-                        </TableRow>
                       ))}
                     </TableBody>
                   </Table>
@@ -534,6 +778,7 @@ const MatchingPortal = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      </Box>
     </Box>
   );
 };

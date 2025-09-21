@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Grid,
@@ -73,6 +74,7 @@ ChartJS.register(
 const DRAWER_WIDTH = 260;
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalStudents: 125,
     totalInternships: 45,
@@ -102,13 +104,17 @@ const AdminDashboard = () => {
   };
 
   const menuItems = [
-    { text: "Dashboard", icon: <DashboardIcon />, active: true },
-    { text: "Students", icon: <People /> },
-    { text: "Internships", icon: <Work /> },
-    { text: "Matching Portal", icon: <Assignment /> },
-    { text: "Analytics", icon: <Analytics /> },
-    { text: "Settings", icon: <Settings /> },
+    { text: "Dashboard", icon: <DashboardIcon />, active: true, path: "/admin/dashboard" },
+    { text: "Students", icon: <People />, path: "/admin/students" },
+    { text: "Internships", icon: <Work />, path: "/admin/internships" },
+    { text: "Matching Portal", icon: <Assignment />, path: "/admin/matching" },
+    { text: "Analytics", icon: <Analytics />, path: "/admin/analytics" },
+    { text: "Settings", icon: <Settings />, path: "/admin/settings" },
   ];
+
+  const handleNavigate = (path) => {
+    navigate(path);
+  };
 
   const chartData = {
     labels: ["Total Internships", "Filled Positions", "Available"],
@@ -180,12 +186,14 @@ const AdminDashboard = () => {
           {menuItems.map((item) => (
             <ListItemButton
               key={item.text}
+              onClick={() => handleNavigate(item.path)}
               sx={{
                 mx: 2,
                 mb: 1,
                 borderRadius: 2,
                 bgcolor: item.active ? "rgba(255,255,255,0.1)" : "transparent",
                 "&:hover": { bgcolor: "rgba(255,255,255,0.05)" },
+                cursor: "pointer",
               }}
             >
               <ListItemIcon sx={{ color: "white", minWidth: 40 }}>
@@ -294,6 +302,78 @@ const AdminDashboard = () => {
                     </Typography>
                   </Box>
                 </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* Quick Actions */}
+        <Grid container spacing={3} sx={{ mb: 3 }}>
+          <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom sx={{ display: "flex", alignItems: "center" }}>
+                  <Assignment sx={{ mr: 1 }} />
+                  Quick Actions
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      startIcon={<WorkOutline />}
+                      onClick={() => handleNavigate("/admin/internships")}
+                      sx={{
+                        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                        py: 1.5,
+                      }}
+                    >
+                      Post New Job
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      startIcon={<Assignment />}
+                      onClick={() => handleNavigate("/admin/matching")}
+                      sx={{
+                        background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+                        py: 1.5,
+                      }}
+                    >
+                      Find Best Candidates
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      startIcon={<People />}
+                      onClick={() => handleNavigate("/admin/students")}
+                      sx={{
+                        background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+                        py: 1.5,
+                      }}
+                    >
+                      View Students
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      startIcon={<Analytics />}
+                      onClick={() => handleNavigate("/admin/matching")}
+                      sx={{
+                        background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+                        py: 1.5,
+                      }}
+                    >
+                      Run AI Matching
+                    </Button>
+                  </Grid>
+                </Grid>
               </CardContent>
             </Card>
           </Grid>

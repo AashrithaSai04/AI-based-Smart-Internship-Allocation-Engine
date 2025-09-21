@@ -11,6 +11,10 @@ import Register from "./components/Auth/Register.jsx";
 import StudentDashboard from "./components/Student/StudentDashboard.jsx";
 import AdminDashboard from "./components/Admin/Dashboard.jsx";
 import MatchingPortal from "./components/Admin/MatchingPortal.jsx";
+import Internships from "./components/Admin/Internships.jsx";
+import Students from "./components/Admin/Students.jsx";
+import Settings from "./components/Admin/Settings.jsx";
+import AdminLayout from "./components/Admin/AdminLayout.jsx";
 import PrivateRoute from "./components/Auth/PrivateRoute.jsx";
 import Login from "./components/Auth/Auth.jsx";
 
@@ -88,11 +92,25 @@ function App() {
               </PrivateRoute>
             }
           />
+          
+          {/* Admin Routes with Layout */}
           <Route
             path="/admin/dashboard"
             element={
               <PrivateRoute allowedRoles={["admin"]}>
-                <AdminDashboard />
+                <AdminLayout>
+                  <AdminDashboard />
+                </AdminLayout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/internships"
+            element={
+              <PrivateRoute allowedRoles={["admin"]}>
+                <AdminLayout>
+                  <Internships />
+                </AdminLayout>
               </PrivateRoute>
             }
           />
@@ -100,10 +118,33 @@ function App() {
             path="/admin/matching"
             element={
               <PrivateRoute allowedRoles={["admin"]}>
-                <MatchingPortal />
+                <AdminLayout>
+                  <MatchingPortal />
+                </AdminLayout>
               </PrivateRoute>
             }
           />
+          <Route
+            path="/admin/students"
+            element={
+              <PrivateRoute allowedRoles={["admin"]}>
+                <AdminLayout>
+                  <Students />
+                </AdminLayout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/settings"
+            element={
+              <PrivateRoute allowedRoles={["admin"]}>
+                <AdminLayout>
+                  <Settings />
+                </AdminLayout>
+              </PrivateRoute>
+            }
+          />
+          
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Router>

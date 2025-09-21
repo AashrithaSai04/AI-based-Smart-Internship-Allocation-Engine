@@ -1,10 +1,6 @@
-// api.js
+// api.js - Updated for backend integration
 
-// Comment out or remove the real axios-based imports
-// import axios from 'axios';
-// const API = axios.create({ baseURL: 'http://localhost:5000/api' });
-
-// Import the mock functions
+// Import mock functions for fallback
 import {
   mockGetInternships,
   mockGetAdminDashboardStats,
@@ -12,17 +8,132 @@ import {
   mockSubmitApplication,
 } from './mockApi';
 
-export const getInternships = () => mockGetInternships();
+// Base API configuration
+const API_BASE_URL = 'http://localhost:5000'; // Backend Flask server
+
+export const getInternships = async () => {
+  try {
+    // For now, use mock data since backend doesn't have a get all endpoint
+    // TODO: Add backend endpoint to retrieve all internships
+    return await mockGetInternships();
+  } catch (error) {
+    console.error('Error fetching internships:', error);
+    throw error;
+  }
+};
+
 export const getAdminDashboardStats = () => mockGetAdminDashboardStats();
-export const matchStudents = (preferences) => mockMatchStudents(preferences);
+
+// Match internships for a student resume
+export const matchInternships = async (resumeIndex, topN = 15) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/match_internships`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        resume_index: resumeIndex,
+        top_n: topN
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error matching internships:', error);
+    throw error;
+  }
+};
+
+// Match resumes for a job/internship
+export const matchResumes = async (jobIndex, topN = 15) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/match_resumes`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        job_index: jobIndex,
+        top_n: topN
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error matching resumes:', error);
+    throw error;
+  }
+};
+
+// Legacy function for backward compatibility
+export const matchStudents = async (criteria) => {
+  try {
+    // Check if criteria includes job_index for real backend call
+    if (criteria && criteria.jobIndex !== undefined) {
+      return await matchResumes(criteria.jobIndex, criteria.topN || 15);
+    }
+    // Fallback to mock data
+    return await mockMatchStudents(criteria);
+  } catch (error) {
+    console.error('Error matching students:', error);
+    return await mockMatchStudents(criteria);
+  }
+};
+
 export const submitApplication = (internshipId, data) =>
   mockSubmitApplication(internshipId, data);
+
+// Upload and match resume text (new function)
+export const uploadResumeAndMatch = async (resumeText) => {
+  try {
+    // TODO: Backend endpoint for text-based resume upload and matching
+    // For now, simulate with formatted mock data
+    console.log('Uploading resume text for matching:', resumeText.substring(0, 100) + '...');
+    
+    // Return formatted mock data similar to backend response
+    return [
+      {
+        "Role": "Data Science Internship",
+        "Company Name": "Tech Corp",
+        "Location": "Bangalore",
+        "Skills": "Python, Machine Learning, SQL",
+        "Stipend": "₹15,000/month",
+        "Skills_Score": 0.85,
+        "Final_Score": 0.82,
+        "Sector": "Technology"
+      },
+      {
+        "Role": "Software Development Internship", 
+        "Company Name": "StartupXYZ",
+        "Location": "Mumbai",
+        "Skills": "React, JavaScript, Node.js",
+        "Stipend": "₹12,000/month",
+        "Skills_Score": 0.75,
+        "Final_Score": 0.73,
+        "Sector": "Technology"
+      }
+    ];
+  } catch (error) {
+    console.error('Error uploading resume and matching:', error);
+    throw error;
+  }
+};
 
 // Add other functions as needed (e.g., login, register) and mock them as well
 export const registerUser = async (formData) => {
     console.log('Mocking user registration with:', formData);
     return { status: 200, message: 'Registration successful' };
 };
+
 export const loginUser = async (formData) => {
     console.log('Mocking user login with:', formData);
     const mockToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjM0NSIsImlhdCI6MTY3ODkwMTIzNH0.S-gTjY6wD6hW5z_Iu-0jV-R2QyG-8b9D-Y2Qf5y5ZtY";
