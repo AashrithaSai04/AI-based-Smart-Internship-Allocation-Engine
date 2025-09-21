@@ -1,27 +1,31 @@
-
 import React, { useState, useEffect } from "react";
+import { 
+  Box, 
+  Typography, 
+  Card, 
+  CardContent, 
+  Grid, 
+  Button,
+  Tab,
+  Tabs,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper
+} from "@mui/material";
 import { getInternships } from "../../api/api";
-import { Box, Tabs, Tab, Paper, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
-
-// Mock applied opportunities and status
-const MOCK_APPLIED = [
-  {
-    _id: "1",
-    title: "Software Development Intern",
-    company: "Innovate Solutions Inc.",
-    status: "Under Review",
-  },
-  {
-    _id: "2",
-    title: "Data Science Intern",
-    company: "DataGenius Corp.",
-    status: "Accepted",
-  },
-];
 
 const StudentDashboard = () => {
   const [tab, setTab] = useState(0);
   const [internships, setInternships] = useState([]);
+
+  const mockApplied = [
+    { id: 1, title: "Software Development Intern", company: "Tech Corp", status: "Under Review" },
+    { id: 2, title: "Data Science Intern", company: "Data Lab", status: "Accepted" },
+  ];
 
   useEffect(() => {
     fetchInternships();
@@ -30,107 +34,110 @@ const StudentDashboard = () => {
   const fetchInternships = async () => {
     try {
       const response = await getInternships();
-      setInternships(response.data);
+      setInternships(response.data || []);
     } catch (error) {
       console.error("Failed to fetch internships", error);
+      // Use mock data
+      setInternships([
+        { id: 1, title: "Frontend Developer", company: "TechStart", location: "Remote" },
+        { id: 2, title: "Backend Developer", company: "DataCorp", location: "NYC" },
+      ]);
     }
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" mb={3} align="center">
+    <Box sx={{ p: 3, minHeight: "100vh", bgcolor: "#f5f5f5" }}>
+      <Typography variant="h4" gutterBottom>
         Student Dashboard
       </Typography>
-      <Paper sx={{ mb: 3 }}>
-        <Tabs value={tab} onChange={(_, v) => setTab(v)} centered>
-          <Tab label="Opportunities to Apply" />
-          <Tab label="Applied Opportunities" />
-          <Tab label="Application Status" />
-        </Tabs>
-      </Paper>
-      {tab === 0 && (
-        <Box>
-          <Typography variant="h6" mb={2}>Available Internships</Typography>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Title</TableCell>
-                  <TableCell>Company</TableCell>
-                  <TableCell>Skills</TableCell>
-                  <TableCell>Location</TableCell>
-                  <TableCell>Action</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {internships.map((internship) => (
-                  <TableRow key={internship._id}>
-                    <TableCell>{internship.title}</TableCell>
-                    <TableCell>{internship.company}</TableCell>
-                    <TableCell>{internship.requiredSkills.join(", ")}</TableCell>
-                    <TableCell>{internship.location}</TableCell>
-                    <TableCell>
-                      <Button variant="contained" color="primary" size="small">
-                        Apply
+      
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} sm={4}>
+          <Card>
+            <CardContent sx={{ textAlign: "center" }}>
+              <Typography variant="h3" color="primary">3</Typography>
+              <Typography variant="body2">Applications</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <Card>
+            <CardContent sx={{ textAlign: "center" }}>
+              <Typography variant="h3" color="warning.main">2</Typography>
+              <Typography variant="body2">Interviews</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <Card>
+            <CardContent sx={{ textAlign: "center" }}>
+              <Typography variant="h3" color="success.main">1</Typography>
+              <Typography variant="body2">Offers</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      <Card>
+        <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+          <Tabs value={tab} onChange={(_, newValue) => setTab(newValue)}>
+            <Tab label="Available Internships" />
+            <Tab label="My Applications" />
+          </Tabs>
+        </Box>
+        
+        {tab === 0 && (
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Recommended Internships
+            </Typography>
+            <Grid container spacing={2}>
+              {internships.map((internship) => (
+                <Grid item xs={12} md={6} key={internship.id || internship._id}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography variant="h6">{internship.title}</Typography>
+                      <Typography color="text.secondary">{internship.company}</Typography>
+                      <Typography variant="body2">{internship.location}</Typography>
+                      <Button variant="contained" size="small" sx={{ mt: 2 }}>
+                        Apply Now
                       </Button>
-                    </TableCell>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </CardContent>
+        )}
+        
+        {tab === 1 && (
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Application Status
+            </Typography>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Position</TableCell>
+                    <TableCell>Company</TableCell>
+                    <TableCell>Status</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Box>
-      )}
-      {tab === 1 && (
-        <Box>
-          <Typography variant="h6" mb={2}>Applied Opportunities</Typography>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Title</TableCell>
-                  <TableCell>Company</TableCell>
-                  <TableCell>Status</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {MOCK_APPLIED.map((app) => (
-                  <TableRow key={app._id}>
-                    <TableCell>{app.title}</TableCell>
-                    <TableCell>{app.company}</TableCell>
-                    <TableCell>{app.status}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Box>
-      )}
-      {tab === 2 && (
-        <Box>
-          <Typography variant="h6" mb={2}>Application Status</Typography>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Title</TableCell>
-                  <TableCell>Company</TableCell>
-                  <TableCell>Status</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {MOCK_APPLIED.map((app) => (
-                  <TableRow key={app._id}>
-                    <TableCell>{app.title}</TableCell>
-                    <TableCell>{app.company}</TableCell>
-                    <TableCell>{app.status}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Box>
-      )}
+                </TableHead>
+                <TableBody>
+                  {mockApplied.map((app) => (
+                    <TableRow key={app.id}>
+                      <TableCell>{app.title}</TableCell>
+                      <TableCell>{app.company}</TableCell>
+                      <TableCell>{app.status}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </CardContent>
+        )}
+      </Card>
     </Box>
   );
 };
