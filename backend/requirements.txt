@@ -1,6 +1,7 @@
-fastapi
-uvicorn[standard]
+flask
+flask-ngrok
 pandas
-scikit-learn
 numpy
+nltk
 sentence-transformers
+scikit-learn
