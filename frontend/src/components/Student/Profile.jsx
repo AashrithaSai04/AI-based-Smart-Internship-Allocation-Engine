@@ -1,5 +1,5 @@
 // Student profile page
-import React from 'react';
+import React from "react";
 
 const Profile = () => {
   return <div>Student Profile</div>;

@@ -1,5 +1,5 @@
 // Student login form
-import React from 'react';
+import React from "react";
 
 const StudentLogin = () => {
   return <div>Student Login Form</div>;

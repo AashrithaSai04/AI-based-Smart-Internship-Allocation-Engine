@@ -1,5 +1,5 @@
 // Sidebar navigation links
-import React from 'react';
+import React from "react";
 
 const AdminSidebar = () => {
   return <div>Admin Sidebar</div>;

@@ -1,5 +1,5 @@
 // List & manage student profiles
-import React from 'react';
+import React from "react";
 
 const Students = () => {
   return <div>Students List & Management</div>;
