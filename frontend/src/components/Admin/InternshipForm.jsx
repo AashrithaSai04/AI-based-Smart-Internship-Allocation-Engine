@@ -30,6 +30,7 @@ import {
   LocationOn as LocationIcon,
   Assessment as AssessmentIcon,
   Schedule as ScheduleIcon,
+  Settings as SettingsIcon,
 } from "@mui/icons-material";
 
 const InternshipForm = ({ open, onClose, onSubmit, editingInternship = null }) => {
@@ -169,207 +170,258 @@ const InternshipForm = ({ open, onClose, onSubmit, editingInternship = null }) =
                 <Typography variant="h6" gutterBottom color="primary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
                   <BusinessIcon />
                   Basic Information
-              </Typography>
-            </Grid>
+                </Typography>
             
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Role / Position Title *"
-                value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                placeholder="e.g., Software Development Intern"
-              />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Company Name *"
-                value={formData.company}
-                onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                placeholder="e.g., TechCorp Solutions"
-              />
-            </Grid>
-
-            <Grid item xs={12} md={4}>
-              <Autocomplete
-                options={locationOptions}
-                value={formData.location}
-                onChange={(_, newValue) => setFormData({ ...formData, location: newValue || "" })}
-                freeSolo
-                renderInput={(params) => (
-                  <TextField {...params} label="Location *" placeholder="Select or type location" />
-                )}
-              />
-            </Grid>
-
-            <Grid item xs={12} md={4}>
-              <TextField
-                fullWidth
-                label="Duration"
-                value={formData.duration}
-                onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                placeholder="e.g., 3 Months"
-              />
-            </Grid>
-
-            <Grid item xs={12} md={4}>
-              <TextField
-                fullWidth
-                label="Stipend"
-                value={formData.stipend}
-                onChange={(e) => setFormData({ ...formData, stipend: e.target.value })}
-                placeholder="e.g., ₹15,000/month"
-              />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth>
-                <InputLabel>Intern Type</InputLabel>
-                <Select
-                  value={formData.internType}
-                  onChange={(e) => setFormData({ ...formData, internType: e.target.value })}
-                  MenuProps={{
-                    PaperProps: {
-                      style: {
-                        maxHeight: 300,
-                        width: 250,
-                      },
-                    },
-                  }}
-                  sx={{
-                    '& .MuiSelect-select': {
-                      minHeight: '56px',
-                      display: 'flex',
-                      alignItems: 'center',
-                    },
-                  }}
-                >
-                  <MenuItem value="Internship" sx={{ fontSize: '1rem', py: 1.5 }}>
-                    Internship
-                  </MenuItem>
-                  <MenuItem value="Internship with job offer" sx={{ fontSize: '1rem', py: 1.5 }}>
-                    Internship with job offer
-                  </MenuItem>
-                  <MenuItem value="Part-time" sx={{ fontSize: '1rem', py: 1.5 }}>
-                    Part-time
-                  </MenuItem>
-                  <MenuItem value="Full-time" sx={{ fontSize: '1rem', py: 1.5 }}>
-                    Full-time
-                  </MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <Autocomplete
-                options={sectorOptions}
-                value={formData.sector}
-                onChange={(_, newValue) => setFormData({ ...formData, sector: newValue || "" })}
-                freeSolo
-                ListboxProps={{
-                  style: {
-                    maxHeight: 200,
-                    fontSize: '1rem',
-                  },
-                }}
-                renderInput={(params) => (
-                  <TextField 
-                    {...params} 
-                    label="Sector" 
-                    placeholder="Select sector"
-                    sx={{
-                      '& .MuiInputBase-root': {
-                        minHeight: '56px',
-                      },
-                    }}
-                  />
-                )}
-                renderOption={(props, option) => (
-                  <li {...props} style={{ fontSize: '1rem', padding: '12px 16px' }}>
-                    {option}
-                  </li>
-                )}
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <Autocomplete
-                multiple
-                options={skillOptions}
-                value={formData.skills}
-                onChange={handleSkillsChange}
-                freeSolo
-                ListboxProps={{
-                  style: {
-                    maxHeight: 250,
-                    fontSize: '1rem',
-                  },
-                }}
-                renderTags={(value, getTagProps) =>
-                  value.map((option, index) => (
-                    <Chip 
-                      variant="outlined" 
-                      label={option} 
-                      {...getTagProps({ index })}
-                      sx={{ fontSize: '0.875rem', height: '32px' }}
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Role / Position Title *"
+                      value={formData.role}
+                      onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                      placeholder="e.g., Software Development Intern"
                     />
-                  ))
-                }
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Required Skills"
-                    placeholder="Add skills (type and press Enter)"
-                    sx={{
-                      '& .MuiInputBase-root': {
-                        minHeight: '56px',
-                      },
-                    }}
-                  />
-                )}
-                renderOption={(props, option) => (
-                  <li {...props} style={{ fontSize: '1rem', padding: '12px 16px' }}>
-                    {option}
-                  </li>
-                )}
-              />
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Company Name *"
+                      value={formData.company}
+                      onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                      placeholder="e.g., TechCorp Solutions"
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} md={4}>
+                    <Autocomplete
+                      options={locationOptions}
+                      value={formData.location}
+                      onChange={(_, newValue) => setFormData({ ...formData, location: newValue || "" })}
+                      freeSolo
+                      renderInput={(params) => (
+                        <TextField {...params} label="Location *" placeholder="Select or type location" />
+                      )}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} md={4}>
+                    <TextField
+                      fullWidth
+                      label="Duration"
+                      value={formData.duration}
+                      onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+                      placeholder="e.g., 3 Months"
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} md={4}>
+                    <TextField
+                      fullWidth
+                      label="Stipend"
+                      value={formData.stipend}
+                      onChange={(e) => setFormData({ ...formData, stipend: e.target.value })}
+                      placeholder="e.g., ₹15,000/month"
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>Intern Type</InputLabel>
+                      <Select
+                        value={formData.internType}
+                        onChange={(e) => setFormData({ ...formData, internType: e.target.value })}
+                        MenuProps={{
+                          PaperProps: {
+                            style: {
+                              maxHeight: 300,
+                              width: 250,
+                            },
+                          },
+                        }}
+                        sx={{
+                          '& .MuiSelect-select': {
+                            minHeight: '56px',
+                            display: 'flex',
+                            alignItems: 'center',
+                          },
+                        }}
+                      >
+                        <MenuItem value="Internship" sx={{ fontSize: '1rem', py: 1.5 }}>
+                          Internship
+                        </MenuItem>
+                        <MenuItem value="Internship with job offer" sx={{ fontSize: '1rem', py: 1.5 }}>
+                          Internship with job offer
+                        </MenuItem>
+                        <MenuItem value="Part-time" sx={{ fontSize: '1rem', py: 1.5 }}>
+                          Part-time
+                        </MenuItem>
+                        <MenuItem value="Full-time" sx={{ fontSize: '1rem', py: 1.5 }}>
+                          Full-time
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <Autocomplete
+                      options={sectorOptions}
+                      value={formData.sector}
+                      onChange={(_, newValue) => setFormData({ ...formData, sector: newValue || "" })}
+                      freeSolo
+                      ListboxProps={{
+                        style: {
+                          maxHeight: 200,
+                          fontSize: '1rem',
+                        },
+                      }}
+                      renderInput={(params) => (
+                        <TextField 
+                          {...params} 
+                          label="Sector"
+                          placeholder="Select sector"
+                          sx={{
+                            '& .MuiInputBase-root': {
+                              minHeight: '56px',
+                            },
+                          }}
+                        />
+                      )}
+                      renderOption={(props, option) => (
+                        <li {...props} style={{ fontSize: '1rem', padding: '12px 16px' }}>
+                          {option}
+                        </li>
+                      )}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <Autocomplete
+                      options={locationOptions}
+                      value={formData.workLocation}
+                      onChange={(_, newValue) => setFormData({ ...formData, workLocation: newValue || "" })}
+                      freeSolo
+                      ListboxProps={{
+                        style: {
+                          maxHeight: 200,
+                          fontSize: '1rem',
+                        },
+                      }}
+                      renderInput={(params) => (
+                        <TextField 
+                          {...params} 
+                          label="Work Location"
+                          variant="outlined"
+                          fullWidth
+                        />
+                      )}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Number of Students"
+                      value={formData.numberOfStudents}
+                      onChange={(e) => setFormData({ ...formData, numberOfStudents: e.target.value })}
+                      type="number"
+                      variant="outlined"
+                      inputProps={{
+                        min: 1,
+                        style: { fontSize: '1rem' },
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+              </Card>
             </Grid>
 
+            {/* Skills and Description */}
             <Grid item xs={12}>
-              <Autocomplete
-                multiple
-                options={perkOptions}
-                value={formData.perks}
-                onChange={handlePerksChange}
-                freeSolo
-                renderTags={(value, getTagProps) =>
-                  value.map((option, index) => (
-                    <Chip variant="outlined" label={option} {...getTagProps({ index })} />
-                  ))
-                }
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Perks & Benefits"
-                    placeholder="Add perks"
-                  />
-                )}
-              />
-            </Grid>
+              <Card sx={{ p: 3, mb: 2, borderRadius: 3, background: 'rgba(255,255,255,0.9)' }}>
+                <Typography variant="h6" gutterBottom color="primary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                  <SettingsIcon />
+                  Skills & Requirements
+                </Typography>
+                
+                <Grid container spacing={3}>
+                  <Grid item xs={12}>
+                    <Autocomplete
+                      multiple
+                      options={skillOptions}
+                      value={formData.skills}
+                      onChange={handleSkillsChange}
+                      freeSolo
+                      ListboxProps={{
+                        style: {
+                          maxHeight: 250,
+                          fontSize: '1rem',
+                        },
+                      }}
+                      renderTags={(value, getTagProps) =>
+                        value.map((option, index) => (
+                          <Chip 
+                            variant="outlined" 
+                            label={option} 
+                            {...getTagProps({ index })}
+                            sx={{ fontSize: '0.875rem', height: '32px' }}
+                          />
+                        ))
+                      }
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Required Skills"
+                          placeholder="Add skills (type and press Enter)"
+                          sx={{
+                            '& .MuiInputBase-root': {
+                              minHeight: '56px',
+                            },
+                          }}
+                        />
+                      )}
+                      renderOption={(props, option) => (
+                        <li {...props} style={{ fontSize: '1rem', padding: '12px 16px' }}>
+                          {option}
+                        </li>
+                      )}
+                    />
+                  </Grid>
 
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                label="Job Description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Detailed description of the internship..."
-              />
-            </Grid>
+                  <Grid item xs={12}>
+                    <Autocomplete
+                      multiple
+                      options={perkOptions}
+                      value={formData.perks}
+                      onChange={handlePerksChange}
+                      freeSolo
+                      renderTags={(value, getTagProps) =>
+                        value.map((option, index) => (
+                          <Chip variant="outlined" label={option} {...getTagProps({ index })} />
+                        ))
+                      }
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Perks & Benefits"
+                          placeholder="Add perks"
+                        />
+                      )}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={4}
+                      label="Job Description"
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      placeholder="Detailed description of the internship..."
+                    />
+                  </Grid>
+                </Grid>
               </Card>
             </Grid>
 
@@ -381,11 +433,12 @@ const InternshipForm = ({ open, onClose, onSubmit, editingInternship = null }) =
                   AI Matching Criteria
                 </Typography>
 
-            <Grid item xs={12} md={6}>
-              <Typography gutterBottom>Skills Weight: {formData.skillWeightPreference}%</Typography>
-              <Slider
-                value={formData.skillWeightPreference}
-                onChange={(_, value) => setFormData({ ...formData, skillWeightPreference: value })}
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <Typography gutterBottom>Skills Weight: {formData.skillWeightPreference}%</Typography>
+                    <Slider
+                      value={formData.skillWeightPreference}
+                      onChange={(_, value) => setFormData({ ...formData, skillWeightPreference: value })}
                 min={0}
                 max={100}
                 valueLabelDisplay="auto"
@@ -486,6 +539,7 @@ const InternshipForm = ({ open, onClose, onSubmit, editingInternship = null }) =
                 label="Auto-match candidates after deadline"
               />
             </Grid>
+                </Grid>
               </Card>
             </Grid>
           </Grid>

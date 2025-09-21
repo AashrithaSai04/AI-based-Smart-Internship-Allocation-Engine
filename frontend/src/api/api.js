@@ -140,3 +140,166 @@ export const loginUser = async (formData) => {
     localStorage.setItem('token', mockToken);
     return { status: 200, message: 'Login successful' };
 };
+
+// New API functions for file upload and deadline management
+
+// Upload resume file (PDF/DOCX) with optional instant matching
+export const uploadResumeFile = async (file, options = {}) => {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('instant_match', options.instantMatch || 'false');
+    formData.append('top_n', options.topN || 10);
+    formData.append('location', options.location || '');
+    formData.append('social_category', options.socialCategory || 'General');
+    formData.append('past_participation', options.pastParticipation || 0);
+
+    const response = await fetch(`${API_BASE_URL}/upload_resume`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error uploading resume file:', error);
+    throw error;
+  }
+};
+
+// Submit application for internship (with deadline support)
+export const submitInternshipApplication = async (applicationData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/submit_application`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(applicationData)
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error submitting application:', error);
+    throw error;
+  }
+};
+
+// Set deadline for internship applications
+export const setDeadline = async (internshipId, deadline) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/set_deadline`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        internship_id: internshipId,
+        deadline: deadline
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error setting deadline:', error);
+    throw error;
+  }
+};
+
+// Get all applications or filter by internship
+export const getApplications = async (internshipId = null) => {
+  try {
+    let url = `${API_BASE_URL}/get_applications`;
+    if (internshipId) {
+      url += `?internship_id=${internshipId}`;
+    }
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching applications:', error);
+    throw error;
+  }
+};
+
+// Process deadline-based matching
+export const processDeadlineMatching = async (internshipId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/process_deadline_matching`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        internship_id: internshipId
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error processing deadline matching:', error);
+    throw error;
+  }
+};
+
+// Additional admin functions for application management
+export const setApplicationDeadline = async (data) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/set_deadline`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data)
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error setting application deadline:', error);
+    throw error;
+  }
+};
+
+export const triggerBatchMatching = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/trigger_batch_matching`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error triggering batch matching:', error);
+    throw error;
+  }
+};

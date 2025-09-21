@@ -27,6 +27,7 @@ import {
   Settings as SettingsIcon,
   AccountCircle,
   Logout,
+  Assignment as AssignmentIcon,
 } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -59,6 +60,7 @@ const AdminLayout = ({ children }) => {
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin/dashboard' },
     { text: 'Internships', icon: <BusinessIcon />, path: '/admin/internships' },
+    { text: 'Applications', icon: <AssignmentIcon />, path: '/admin/applications' },
     { text: 'Matching Portal', icon: <AssessmentIcon />, path: '/admin/matching' },
     { text: 'Students', icon: <PeopleIcon />, path: '/admin/students' },
     { text: 'Settings', icon: <SettingsIcon />, path: '/admin/settings' },

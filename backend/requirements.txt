@@ -5,3 +5,6 @@ numpy
 nltk
 sentence-transformers
 scikit-learn
+PyPDF2
+python-docx
+flask-cors
