@@ -106,6 +106,19 @@ const StudentDashboard = () => {
       return;
     }
 
+    // Client-side file validation
+    const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (!allowedTypes.includes(selectedFile.type)) {
+      setUploadError("Please upload only PDF or DOCX files");
+      return;
+    }
+
+    // Check file size (max 10MB)
+    if (selectedFile.size > 10 * 1024 * 1024) {
+      setUploadError("File size must be less than 10MB");
+      return;
+    }
+
     setIsUploading(true);
     setUploadError("");
     setUploadSuccess("");
@@ -133,7 +146,12 @@ const StudentDashboard = () => {
       }
       
     } catch (error) {
-      setUploadError(error.message || "Error uploading resume");
+      // Enhanced error handling for specific validation errors
+      if (error.message.includes("Invalid resume content")) {
+        setUploadError(`❌ ${error.message}\n\nPlease upload a proper resume containing:\n• Personal information (name, contact)\n• Work experience or education\n• Skills and qualifications`);
+      } else {
+        setUploadError(error.message || "Error uploading resume");
+      }
     } finally {
       setIsUploading(false);
     }
@@ -307,6 +325,14 @@ const StudentDashboard = () => {
                     Upload Resume File
                   </Typography>
                   
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    📄 Upload your resume in PDF or DOCX format (max 10MB)
+                    <br />
+                    ✅ Must contain: Personal info, education/experience, skills
+                    <br />
+                    ❌ Academic papers, invoices, or random documents will be rejected
+                  </Typography>
+                  
                   <input
                     type="file"
                     accept=".pdf,.docx"
@@ -323,7 +349,7 @@ const StudentDashboard = () => {
                       sx={{ mb: 2, minWidth: 200 }}
                       size="large"
                     >
-                      Choose PDF or DOCX
+                      Choose Resume (PDF/DOCX)
                     </Button>
                   </label>
                   
@@ -418,7 +444,7 @@ const StudentDashboard = () => {
                   </Grid>
                   
                   {uploadError && (
-                    <Alert severity="error" sx={{ mb: 2 }}>
+                    <Alert severity="error" sx={{ mb: 2, whiteSpace: 'pre-line' }}>
                       {uploadError}
                     </Alert>
                   )}

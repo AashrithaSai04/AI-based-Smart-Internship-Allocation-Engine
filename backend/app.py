@@ -214,6 +214,76 @@ def extract_text_from_docx(file_path):
         print(f"Error extracting text from DOCX: {e}")
         return ""
 
+def validate_resume_content(text):
+    """Validate if the extracted text appears to be a resume"""
+    if not text or len(text.strip()) < 100:
+        return False, "Document too short to be a resume"
+    
+    text_lower = text.lower()
+    
+    # Resume keywords - must have at least 3 categories
+    resume_indicators = {
+        'personal_info': ['resume', 'cv', 'curriculum vitae'],
+        'experience': ['experience', 'work experience', 'employment', 'job', 'position', 'role', 'worked at', 'intern', 'internship'],
+        'education': ['education', 'degree', 'university', 'college', 'school', 'graduated', 'bachelor', 'master', 'phd', 'diploma'],
+        'skills': ['skills', 'programming', 'software', 'technology', 'proficient', 'familiar', 'knowledge', 'languages', 'tools'],
+        'contact': ['email', 'phone', 'contact', 'linkedin', 'github']
+    }
+    
+    categories_found = 0
+    found_keywords = []
+    
+    for category, keywords in resume_indicators.items():
+        category_matches = [kw for kw in keywords if kw in text_lower]
+        if category_matches:
+            categories_found += 1
+            found_keywords.extend(category_matches)
+    
+    # Strong indicators that this is NOT a resume
+    strong_non_resume_indicators = [
+        'invoice #', 'bill to:', 'amount due:', 'payment terms:', 'total cost:', 'invoice number:',
+        'menu', 'appetizers', 'main courses', 'desserts', 'restaurant menu',
+        'abstract\n', 'methodology\n', 'bibliography\n', 'references cited\n', 'chapter 1',
+        'once upon a time', 'the end', 'dear sir/madam', 'sincerely yours',
+        'recipe:', 'ingredients:', 'cooking instructions:', 'serves 4',
+        'terms and conditions', 'warranty information', 'disclaimer:',
+        'patient name:', 'diagnosis:', 'treatment plan:', 'medication:',
+        'balance sheet', 'profit and loss statement', 'financial statement'
+    ]
+    
+    # Weak indicators (less certain)
+    weak_non_resume_indicators = [
+        'table of contents', 'introduction', 'conclusion',
+        'figure', 'chart', 'graph', 'data analysis'
+    ]
+    
+    strong_non_resume_found = sum(1 for indicator in strong_non_resume_indicators if indicator in text_lower)
+    weak_non_resume_found = sum(1 for indicator in weak_non_resume_indicators if indicator in text_lower)
+    
+    # Validation logic - stricter requirements
+    if strong_non_resume_found > 0:
+        return False, f"Document appears to be a {strong_non_resume_indicators[0] if 'invoice' in text_lower else 'non-resume document'} based on content analysis"
+    
+    if categories_found < 3:
+        return False, f"Document doesn't appear to be a resume. Found only {categories_found}/5 resume categories. Expected keywords like experience, education, skills, etc."
+    
+    if weak_non_resume_found > 3:
+        return False, "Document appears to be an academic paper or report rather than a resume"
+    
+    # Check if it's too repetitive (spam-like content)
+    words = text_lower.split()
+    if len(set(words)) < len(words) * 0.3:  # Less than 30% unique words
+        return False, "Document content appears to be repetitive or spam-like"
+    
+    # Additional check: ensure we have both experience/education AND skills/contact
+    has_career_info = any(kw in text_lower for kw in resume_indicators['experience'] + resume_indicators['education'])
+    has_skills_or_contact = any(kw in text_lower for kw in resume_indicators['skills'] + resume_indicators['contact'])
+    
+    if not (has_career_info and has_skills_or_contact):
+        return False, "Document lacks essential resume components (career info + skills/contact details)"
+    
+    return True, f"Valid resume detected with {categories_found} resume categories"
+
 def parse_resume_file(file_path, filename):
     """Parse resume file and extract text based on file type"""
     file_extension = filename.rsplit('.', 1)[1].lower()
@@ -333,6 +403,41 @@ def upload_resume():
             if not resume_text.strip():
                 print("Error: No text extracted")
                 return jsonify({"error": "Could not extract text from file"}), 400
+            
+            # Validate if the content is actually a resume
+            try:
+                print("Validating resume content...")
+                is_valid, validation_message = validate_resume_content(resume_text)
+                print(f"Validation result: {is_valid}, Message: {validation_message}")
+                
+                # Additional debugging for failed validation
+                if not is_valid:
+                    print(f"Resume text preview (first 500 chars): {resume_text[:500]}")
+                    print(f"Resume text length: {len(resume_text)}")
+                    
+                    # Check what triggered the rejection
+                    text_lower = resume_text.lower()
+                    strong_non_resume_indicators = [
+                        'invoice', 'bill to', 'amount due', 'payment terms', 'total cost', 'price',
+                        'menu', 'appetizers', 'main courses', 'desserts', 'restaurant',
+                        'abstract', 'methodology', 'bibliography', 'references cited', 'chapter',
+                        'once upon a time', 'the end', 'dear sir', 'sincerely yours',
+                        'recipe', 'ingredients', 'cooking instructions', 'serves',
+                        'terms and conditions', 'warranty', 'disclaimer',
+                        'patient', 'diagnosis', 'treatment', 'medication',
+                        'balance sheet', 'profit and loss', 'financial statement'
+                    ]
+                    
+                    found_triggers = [indicator for indicator in strong_non_resume_indicators if indicator in text_lower]
+                    if found_triggers:
+                        print(f"Strong rejection triggers found: {found_triggers}")
+                
+                if not is_valid:
+                    return jsonify({"error": f"Invalid resume content: {validation_message}"}), 400
+                    
+            except Exception as e:
+                print(f"Error validating resume content: {e}")
+                return jsonify({"error": f"Error validating resume content: {str(e)}"}), 500
             
             # Clean and preprocess the resume text
             try:
