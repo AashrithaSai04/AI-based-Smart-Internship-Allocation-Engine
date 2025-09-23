@@ -50,29 +50,33 @@ export const matchInternships = async (resumeIndex, topN = 15) => {
 };
 
 // Match resumes for a job/internship
-export const matchResumes = async (jobIndex, topN = 15) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/match_resumes`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        job_index: jobIndex,
-        top_n: topN
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error matching resumes:', error);
-    throw error;
-  }
-};
+   export const matchResumes = async (jobIndex, weights = {}, topN = 15) => {
+     try {
+       const response = await fetch(`${API_BASE_URL}/match_resumes`, {
+         method: 'POST',
+         headers: {
+           'Content-Type': 'application/json',
+         },
+         body: JSON.stringify({
+           job_index: jobIndex,
+           top_n: topN,
+           w_skills: weights.skills ?? 0.7,
+           w_location: weights.location ?? 0.1,
+           w_social_cat: weights.socialCat ?? 0.1,
+           w_past_part: weights.pastPart ?? 0.1
+         })
+       });
+ 
+       if (!response.ok) {
+         throw new Error(`HTTP error! status: ${response.status}`);
+       }
+ 
+       return await response.json();
+     } catch (error) {
+       console.error('Error matching resumes:', error);
+       throw error;
+     }
+   };
 
 // Legacy function for backward compatibility
 export const matchStudents = async (criteria) => {
