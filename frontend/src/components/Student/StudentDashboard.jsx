@@ -65,8 +65,9 @@ const StudentDashboard = () => {
   const [applications, setApplications] = useState([]);
 
   const mockApplied = [
-    { id: 1, title: "Software Development Intern", company: "Tech Corp", status: "Under Review" },
-    { id: 2, title: "Data Science Intern", company: "Data Lab", status: "Accepted" },
+    { id: 1, title: "Software Development Intern", company: "Infosys", status: "Under Review" },
+    { id: 2, title: "Data Science Intern", company: "Tata Consultancy Services", status: "Accepted" },
+    { id: 3, title: "Marketing Intern", company: "Reliance", status: "Pending" },
   ];
 
   useEffect(() => {
@@ -81,8 +82,11 @@ const StudentDashboard = () => {
       console.error("Failed to fetch internships", error);
       // Use mock data
       setInternships([
-        { id: 1, title: "Frontend Developer", company: "TechStart", location: "Remote" },
-        { id: 2, title: "Backend Developer", company: "DataCorp", location: "NYC" },
+        { id: 1, title: "Frontend Developer", company: "TechStart", location: "Bangalore" },
+        { id: 2, title: "Backend Developer", company: "DataCorp", location: "Mumbai" },
+        { id: 3, title: "Data Analyst", company: "InfoEdge", location: "Hyderabad" },
+        { id: 4, title: "UI/UX Designer", company: "DesignStudio", location: "Delhi" },
+        { id: 5, title: "Marketing Intern", company: "BrandCo", location: "Chennai" },
       ]);
     }
   };
@@ -238,7 +242,7 @@ const StudentDashboard = () => {
       
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={4}>
-          <Card sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
+          <Card sx={{ background: 'linear-gradient(135deg, #000000ff 0%, #761fccff 100%)', color: 'white' }}>
             <CardContent sx={{ textAlign: "center" }}>
               <Typography variant="h3" color="primary">3</Typography>
               <Typography variant="body2">Applications</Typography>
@@ -658,6 +662,19 @@ const StudentDashboard = () => {
                           size="small" 
                           sx={{ mt: 1, mb: 2 }}
                         />
+                         {/* Advice based on match score */}
+                         {(() => {
+                           const score = (match.Final_Score || 0) * 100;
+                           if (score >= 70) {
+                             return <Alert severity="success" sx={{ mt: 1 }}>Definitely apply!</Alert>;
+                           } else if (score >= 50) {
+                             return <Alert severity="info" sx={{ mt: 1 }}>Try if you're interested.</Alert>;
+                           } else if (score >= 30) {
+                             return <Alert severity="warning" sx={{ mt: 1 }}>Look for something else.</Alert>;
+                           } else {
+                             return <Alert severity="error" sx={{ mt: 1 }}>Not recommended.</Alert>;
+                           }
+                         })()}
                         <Button
                           variant="contained"
                           size="small"

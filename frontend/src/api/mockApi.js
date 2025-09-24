@@ -2,23 +2,23 @@ const MOCK_INTERNSHIPS = [
   {
     _id: '1',
     title: 'Software Development Intern',
-    company: 'Innovate Solutions Inc.',
+    company: 'Infosys',
     requiredSkills: ['JavaScript', 'React', 'Node.js'],
-    location: 'New York, NY',
+    location: 'Bangalore',
   },
   {
     _id: '2',
     title: 'Data Science Intern',
-    company: 'DataGenius Corp.',
+    company: 'Tata Consultancy Services',
     requiredSkills: ['Python', 'SQL', 'Machine Learning'],
-    location: 'San Francisco, CA',
+    location: 'Mumbai',
   },
   {
     _id: '3',
     title: 'UX/UI Design Intern',
-    company: 'Creative Labs',
+    company: 'Wipro',
     requiredSkills: ['Figma', 'Sketch', 'User Research'],
-    location: 'Austin, TX',
+    location: 'Hyderabad',
   },
 ];
 
