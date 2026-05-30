@@ -124,71 +124,80 @@ const MatchingPortal = () => {
   };
 
   const handleMatch = async () => {
-    if (!selectedJobDetails) {
-      alert("Please select a job/internship first");
-      return;
-    }
+  if (!selectedJobDetails) {
+    alert("Please select a job/internship first");
+    return;
+  }
 
-    setLoading(true);
-    try {
-      // Use real backend API
-      const matches = await matchResumes(selectedJobDetails.id, topN);
-      
-      // Transform backend response to display format
-      const formattedResults = matches.map((match, index) => ({
-        id: index,
-        student: match.Resume || `Student ${index + 1}`,
+  setLoading(true);
+  setMatchDialogOpen(false); // Close the dialog immediately on starting matching
+  try {
+    // Prepare weights from preferences
+    const weights = {
+      skills: preferences.skillWeight / 100,
+      location: preferences.locationWeight / 100,
+      socialCat: preferences.socialCategoryWeight / 100,
+      pastPart: preferences.pastParticipationWeight / 100,
+    };
+    // Use real backend API
+    const matches = await matchResumes(selectedJobDetails.id, weights, topN);
+
+    // Transform backend response to display format
+    const formattedResults = matches.map((match, index) => ({
+      id: index,
+      student: match.Resume || `Student ${index + 1}`,
+      internship: selectedJobDetails.title,
+      company: selectedJobDetails.company,
+      matchScore: Math.round((match.Final_Score || 0) * 100),
+      skillsMatch: Math.round((match.Skills_Score || 0) * 100),
+      locationMatch: match.Location || "N/A",
+      category: match.Category || "General",
+      socialCategory: match.SocialCategory || "General",
+      pastParticipation: match.PastParticipation || false,
+      overallFit: getOverallFit(match.Final_Score),
+      status: getRecommendationStatus(match.Final_Score),
+      rawData: match,
+    }));
+
+    setResults(formattedResults);
+  } catch (error) {
+    console.error("Matching failed", error);
+    // Fallback to mock data if backend fails
+    setResults([
+      {
+        id: 1,
+        student: "Alice Johnson",
         internship: selectedJobDetails.title,
         company: selectedJobDetails.company,
-        matchScore: Math.round((match.Final_Score || 0) * 100),
-        skillsMatch: Math.round((match.Skills_Score || 0) * 100),
-        locationMatch: match.Location || "N/A",
-        category: match.Category || "General",
-        socialCategory: match.SocialCategory || "General",
-        pastParticipation: match.PastParticipation || false,
-        overallFit: getOverallFit(match.Final_Score),
-        status: getRecommendationStatus(match.Final_Score),
-        rawData: match
-      }));
+        matchScore: 92,
+        skillsMatch: 95,
+        locationMatch: "San Francisco",
+        category: "Data Science",
+        socialCategory: "General",
+        pastParticipation: false,
+        overallFit: "Excellent",
+        status: "Recommended",
+      },
+      {
+        id: 2,
+        student: "Bob Smith",
+        internship: selectedJobDetails.title,
+        company: selectedJobDetails.company,
+        matchScore: 87,
+        skillsMatch: 80,
+        locationMatch: "New York",
+        category: "Technology",
+        socialCategory: "SC",
+        pastParticipation: true,
+        overallFit: "Very Good",
+        status: "Recommended",
+      },
+    ]);
+  } finally {
+    setLoading(false);
+  }
+};
 
-      setResults(formattedResults);
-    } catch (error) {
-      console.error("Matching failed", error);
-      // Fallback to mock data if backend fails
-      setResults([
-        {
-          id: 1,
-          student: "Alice Johnson",
-          internship: selectedJobDetails.title,
-          company: selectedJobDetails.company,
-          matchScore: 92,
-          skillsMatch: 95,
-          locationMatch: "San Francisco",
-          category: "Data Science",
-          socialCategory: "General",
-          pastParticipation: false,
-          overallFit: "Excellent",
-          status: "Recommended",
-        },
-        {
-          id: 2,
-          student: "Bob Smith", 
-          internship: selectedJobDetails.title,
-          company: selectedJobDetails.company,
-          matchScore: 87,
-          skillsMatch: 80,
-          locationMatch: "New York",
-          category: "Technology",
-          socialCategory: "SC",
-          pastParticipation: true,
-          overallFit: "Very Good",
-          status: "Recommended",
-        }
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getOverallFit = (score) => {
     if (score >= 0.9) return "Excellent";

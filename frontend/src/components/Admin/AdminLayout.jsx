@@ -253,18 +253,19 @@ const AdminLayout = ({ children }) => {
         </Drawer>
       </Box>
       <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          p: { xs: 2, sm: 3 },
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          mt: { xs: 9, sm: 10 }, // Account for taller AppBar
-          minHeight: 'calc(100vh - 80px)',
-          backgroundColor: '#f8fafc',
-        }}
-      >
-        {children}
+      component="main"
+      sx={{
+        flexGrow: 1,
+        p: { xs: 2, sm: 3 },
+        width: { sm: `calc(100% - ${drawerWidth}px)` },
+        mt: { xs: 9, sm: 10 },
+        minHeight: 'calc(100vh - 80px)',
+        backgroundColor: '#ffffff', // <-- This line makes the background white
+      }}
+    >
+      {children}
       </Box>
+      
     </Box>
   );
 };

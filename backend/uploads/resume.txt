@@ -1,0 +1,40 @@
+Information
+Aashritha Sai Maheshwaram
+Hyderabad, India
+R maheshwaramaashrithasai@gmail.com
+Ó +91 6301492584
+¯ linkedin.com/in/aashritha-sai-maheshwaram
+ github.com/AashrithaSai04
+Dedicated Computer Science student with strong programming skills, solid software engineering
+fundamentals, and problem-solving abilities. Committed to contributing effectively in a collaborative
+team while building practical software solutions.
+Education Chaitanya Bharathi Institute of Technology, Hyderabad
+Bachelor of Engineering â Computer Science and Engineering Aug 2023 – Present
+CGPA: 9.67
+Narayana Junior College, Hyderabad
+MPC Intermediate Apr 2021 – May 2023
+Marks: 980/1000
+Vijayaratna High School, Hyderabad
+Secondary School Certificate Mar 2021
+GPA: 10
+Projects
+Email Spam Classifier: Developed an ML-based spam detection system using Natural Language Processing
+with TF-IDF and Naive Bayes. Reduced false positives and achieved high precision.
+Sentiment Analysis Tool: Built a sentiment classification tool to analyze tweets/captions using Logistic Regression.
+Delivered real-time insights on social media sentiment.
+Skills
+Languages: Python, C, Java, JavaScript, SQL
+Web & Frameworks: ReactJS, Node.js, Express, Bootstrap
+Databases: MongoDB, MySQL
+Tools/Platforms: Git, GitHub, VS Code, AutoCAD, LaTeX
+Subjects: Operating Systems, Computer Networks
+Other: HTML5, CSS3, DSA, OOP, Problem Solving
+Certifications NPTEL: C Programming: Scored 78% (Silver Badge)
+Infosys Springboard: Introduction to Java Programming
+HackerRank Badges: Python (5 Stars) and Problem Solving (3 Stars)
+Activities • Organized events for the college technical fest.
+• Solved 150+ problems on LeetCode.
+• Passionate about dance, singing, and culinary arts.
+Languages English: Professional proficiency
+Telugu: Native proficiency
+Hindi: Beginner
