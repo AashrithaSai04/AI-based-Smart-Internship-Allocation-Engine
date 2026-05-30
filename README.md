@@ -1,102 +1,159 @@
-# AI-Based Smart Allocation Engine
+# AI-Based Smart Internship Allocation Engine
 
-An AI-powered internship and resume matching platform with a Flask backend and a React + Vite frontend. The backend uses sentence embeddings and cosine similarity to rank candidates against internships, supports resume upload and validation, and exposes endpoints for matching and application workflows.
+An AI-powered internship recommendation and allocation platform that matches student resumes with internship opportunities using semantic similarity and natural language processing.
 
-## Overview
-
-The project is organized into two parts:
-
-* `backend/` contains the Flask API, pretrained sentence-transformer model files, and CSV datasets used for matching.
-* `frontend/` contains the React user interface for student and admin flows.
+The system leverages Sentence-BERT embeddings and cosine similarity to analyze resumes and internship descriptions, enabling intelligent matching and ranking of candidates and opportunities.
 
 ## Features
 
-* Resume-to-internship matching using `sentence-transformers` and cosine similarity
-* Internship-to-resume matching for admin workflows
-* Resume upload support for PDF and DOCX files
-* Resume content validation before processing
-* Simple application, deadline, and selection tracking endpoints
-* React dashboard UI for admin and student views
+### Resume-to-Internship Matching
+
+* Upload or select a resume
+* Generate semantic embeddings using Sentence-BERT
+* Rank internships based on similarity scores
+* Display the most relevant opportunities
+
+### Internship-to-Candidate Matching
+
+* Match internship requirements against candidate profiles
+* Rank resumes based on job relevance
+* Support recruiter and admin workflows
+
+### Resume Processing
+
+* PDF and DOCX resume upload support
+* Resume content validation
+* Automatic text extraction and preprocessing
+
+### Application Management
+
+* Submit internship applications
+* Track application status
+* Deadline management
+* Candidate ranking after application deadlines
+
+## Tech Stack
+
+### Frontend
+
+* React
+* Vite
+* JavaScript
+* Axios
+
+### Backend
+
+* Flask
+* Python
+
+### Machine Learning & NLP
+
+* Sentence Transformers
+* Sentence-BERT (SBERT)
+* Cosine Similarity
+* NumPy
+* Pandas
+
+## Project Architecture
+
+```text
+frontend (React + Vite)
+        │
+        ▼
+Flask REST API
+        │
+        ├── Resume Processing
+        ├── Internship Matching
+        ├── Application Management
+        └── Candidate Ranking
+                │
+                ▼
+      Sentence-BERT Model
+                │
+                ▼
+     Similarity-Based Matching
+```
 
 ## Project Structure
 
 ```text
-backend/
-  app.py
-  internships_updated.csv
-  resumes_updated.csv
-  sentence_bert_model/
-  uploads/
+AI-Based-Smart-Internship-Allocation-Engine/
 
-frontend/
-  src/
-  package.json
-  vite.config.js
+├── backend/
+│   ├── app.py
+│   ├── internships_updated.csv
+│   ├── resumes_updated.csv
+│   ├── uploads/
+│   └── sentence_bert_model/
+│
+└── frontend/
+    ├── src/
+    ├── package.json
+    └── vite.config.js
 ```
 
-## Prerequisites
+## Installation
 
-* Python 3.10 or newer
-* Node.js 18 or newer
-* npm
-
-## Backend Setup
-
-1. Open a terminal in `backend/`.
-2. Create and activate a virtual environment if desired.
-3. Install the Python dependencies:
+### Backend Setup
 
 ```bash
+cd backend
+
 pip install -r requirements.txt
-```
 
-4. Start the Flask application:
-
-```bash
 flask --app app run --debug
 ```
 
-The backend expects the CSV files and model folder to remain in the backend directory because it loads them using relative paths.
-
-## Frontend Setup
-
-1. Open a separate terminal in `frontend/`.
-2. Install dependencies:
+### Frontend Setup
 
 ```bash
+cd frontend
+
 npm install
-```
 
-3. Start the development server:
-
-```bash
 npm run dev
 ```
 
-## Main API Endpoints
+## API Endpoints
 
-| Method | Endpoint                     | Description                                   |
-| ------ | ---------------------------- | --------------------------------------------- |
-| POST   | `/match_internships`         | Get internship matches for a resume index     |
-| POST   | `/match_resumes`             | Get resume matches for an internship index    |
-| POST   | `/upload_resume`             | Upload and validate a PDF or DOCX resume      |
-| POST   | `/submit_application`        | Store a student application in memory         |
-| POST   | `/set_deadline`              | Set an application deadline for an internship |
-| GET    | `/get_applications`          | List submitted applications                   |
-| POST   | `/process_deadline_matching` | Score and rank applications after a deadline  |
+| Method | Endpoint                     | Description                     |
+| ------ | ---------------------------- | ------------------------------- |
+| POST   | `/match_internships`         | Match internships for a resume  |
+| POST   | `/match_resumes`             | Match resumes for an internship |
+| POST   | `/upload_resume`             | Upload and validate resume      |
+| POST   | `/submit_application`        | Submit application              |
+| POST   | `/set_deadline`              | Set internship deadline         |
+| GET    | `/get_applications`          | Retrieve applications           |
+| POST   | `/process_deadline_matching` | Rank applicants after deadline  |
 
-## Data Files
+## How Matching Works
 
-The backend uses the following local files for matching:
+1. Resume text and internship descriptions are converted into sentence embeddings using Sentence-BERT.
+2. Embeddings are transformed into numerical vectors.
+3. Cosine similarity is computed between resumes and internship descriptions.
+4. Opportunities and candidates are ranked according to similarity scores.
+5. The highest-ranked matches are returned to the user.
 
-* `resumes_updated.csv`
-* `internships_updated.csv`
-* `sentence_bert_model/`
+## Future Improvements
 
-Keep these files in place unless you also update the backend file paths.
+* Real-time internship recommendations
+* User authentication and role-based access
+* Database integration for persistent storage
+* Explainable AI recommendations
+* Advanced filtering and skill-gap analysis
+* Resume feedback generation
 
-## Notes
+## Learning Outcomes
 
-* Uploaded resumes are stored temporarily in `uploads/` and removed after processing.
-* Applications and deadlines are currently stored in memory, so restarting the server clears them.
-* If you change the frontend API base URL, update the request configuration accordingly.
+Through this project, I gained experience with:
+
+* Natural Language Processing (NLP)
+* Semantic Search and Recommendation Systems
+* Sentence Embeddings
+* Similarity-Based Ranking
+* Flask API Development
+* React Frontend Development
+* Full-Stack AI Application Design
+
+```
+```
